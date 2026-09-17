@@ -1,0 +1,8 @@
+unit_id,vendor_canonical,connectivity,latest_reading,days_since_last_reading,telemetry_coverage_pct,signal_stale_telemetry,recurrent_error_days,latest_error,raw_error_signal,signal_recurrent_error,review_queue,attention_reasons,customer_name,postcode_region,service_tier,commissioning_date,last_service_visit
+TH-02023,A,connected,2026-07-20,10.0,78.3,True,,,,False,data_connectivity_review,Telemetry stopped,Kerstin Gebhardt,44,optimize,2026-01-15,2026-06-02
+TH-02280,B,connected,2026-07-20,10.0,81.7,True,,,,False,data_connectivity_review,Telemetry stopped,Volker Pfefferle,90,free,2025-01-18,2026-01-28
+TH-02304,C,connected,2026-07-20,10.0,73.3,True,,,,False,data_connectivity_review,Telemetry stopped,Rainer Ahrens,10,free,2025-01-04,2025-04-18
+TH-02298,C,connected,2026-07-30,0.0,90.0,False,14.0,2026-07-30,ALM_HP_LOWFLOW,True,technician_review,Persistent uncommon OEM signal: ALM_HP_LOWFLOW,Dieter Niehaus,80,free,2024-06-04,
+TH-02312,C,connected,2026-07-30,0.0,88.3,False,14.0,2026-07-30,ALM_HP_LOWFLOW,True,technician_review,Persistent uncommon OEM signal: ALM_HP_LOWFLOW,Thorsten Oestreich,50,care_plus,2024-03-08,2024-09-07
+TH-02395,C,connected,2026-07-30,0.0,88.3,False,14.0,2026-07-30,ALM_HP_LOWFLOW,True,technician_review,Persistent uncommon OEM signal: ALM_HP_LOWFLOW,Dagmar Pfefferle,81,optimize,2024-05-22,
+TH-02398,C,connected,2026-07-30,0.0,88.3,False,14.0,2026-07-30,ALM_HP_LOWFLOW,True,technician_review,Persistent uncommon OEM signal: ALM_HP_LOWFLOW,Dagmar Bartels,90,care_plus,2025-05-15,
