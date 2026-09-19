@@ -4,11 +4,11 @@ A planner-first service cockpit for turning heterogeneous heat-pump telemetry in
 
 ## Live prototype
 
-Coming soon.
+[Open Service Cockpit →](https://albertoperezpm2.github.io/service-cockpit-case/)
 
 ## Case study
 
-Coming soon.
+[Read the case study →](https://albertoperezpm2.github.io/service-cockpit-case/case-study)
 
 ## Analysis
 
