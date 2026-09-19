@@ -118,5 +118,8 @@ test('navigation keeps Needs Attention primary and exposes All Units as the seco
     assert.equal(activeLinks.length, 1)
     assert.ok(activeLinks[0].includes(view === 'attention' ? 'Needs Attention' : 'All Units'))
     assert.ok(html.includes('Primary navigation'))
+    assert.ok(html.includes('href="/service-cockpit-case/case-study"'))
+    assert.ok(html.includes('Case study ↗'))
+    assert.ok(!activeLinks[0].includes('Case study'))
   }
 })

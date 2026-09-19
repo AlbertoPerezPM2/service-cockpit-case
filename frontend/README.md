@@ -12,6 +12,8 @@ npm install
 npm run dev
 ```
 
+Open the Vite URL at `/service-cockpit-case/`.
+
 The prepared JSON is included. No backend, credentials, persistence, browser storage,
 or API integrations are required. All interaction state lives in React memory.
 
@@ -43,6 +45,8 @@ npm run lint
 - Keyboard-accessible unit buttons, MUI modal focus management, Escape/backdrop closing.
 - Responsive controls, horizontally scrollable table, full-width drawer below 900px.
 - Loading, fetch-error/retry, and empty/clear-filter states.
+- Secondary `/case-study` view with ten supplied case-study pages, previous/next controls,
+  slide count, left/right keyboard navigation, and a return link to the preserved cockpit state.
 
 The approved Needs Attention and technician evidence/briefing layouts remain in place.
 
@@ -136,10 +140,42 @@ provide the shared visual foundation. `src/briefing/` contains the confirmation,
 projection, document view, and print styles. `App.tsx` switches document visibility without
 unmounting either list's state. `src/data/allUnits.ts` handles fleet lookup/filtering and
 `src/data/unitTelemetry.ts` projects existing readings into the small normal-unit trends.
+`src/pages/CaseStudyPage.tsx` contains the static presentation copy and local slide index.
+The AI-use slide opens a scrollable MUI dialog with the author's verbatim Custom GPT configuration
+from `src/pages/wattson-configuration.txt`. The dialog does not navigate or change the slide.
+The header link uses the browser History API for `/case-study`; direct loading and browser
+back/forward are supported without a routing or presentation library. Internal URLs are relative
+to Vite's configured base, `/service-cockpit-case/`. The production build also copies its HTML
+entry to `dist/case-study/index.html`, so GitHub Pages serves direct case-study links and refreshes
+without SPA rewrites. Both entry points load the same app, assets, and prepared JSON.
+
+## GitHub Pages deployment
+
+The expected public URL is `https://albertoperezpm2.github.io/service-cockpit-case/`.
+The direct case-study URL is `https://albertoperezpm2.github.io/service-cockpit-case/case-study/`.
+GitHub Pages redirects the directory URL without a trailing slash to this entry point.
+
+After approving and pushing the changes, select **Settings → Pages → Build and deployment →
+Source: GitHub Actions** in the repository. The `Deploy frontend to GitHub Pages` workflow runs
+on frontend/workflow changes pushed to `main`, or manually from the Actions tab. Deployment
+is restricted to `main`. Set Pages visibility to public if a visibility selector is available;
+the app has no authentication or runtime credentials.
+
+The workflow uses Node 24 and the runner's Python 3, installs locked dependencies with `npm ci`,
+runs tests and lint, and builds the app. Only `frontend/dist` is uploaded. Notebooks, raw CSVs,
+analysis outputs, and repository source files are not part of the Pages artifact. The committed
+frontend JSON is used as-is; deployment does not regenerate data.
+
+Internal links and JSON requests use Vite's `BASE_URL`. External GitHub notebook links and the
+browser-based Technical Visit Briefing print flow are unchanged. The two supported page paths
+have actual HTML entries; arbitrary unknown paths retain GitHub Pages' normal 404 behavior.
+
+To check the production build locally, run `npm run build` and `npm run preview`, then open
+`/service-cockpit-case/` or `/service-cockpit-case/case-study/` at the preview server URL.
 
 ## Verification for this delivery
 
-Snapshot validation, eight Python checks, thirty-seven TypeScript evidence/selector/briefing/All Units checks,
+Snapshot validation, eight Python checks, forty-one TypeScript evidence/selector/briefing/All Units/case-study checks,
 production build, and lint pass. Component rendering checks cover the document, shared drawer variants,
 latest values, fallback charts, derived fleet counts, navigation, table dates, and confirmation copy.
 Interactive/visual browser QA could not run because this session has no connected browser.
