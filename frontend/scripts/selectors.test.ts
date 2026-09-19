@@ -9,12 +9,35 @@ const rows = getAttentionRows(data)
 const defaultSort = { key: 'default', direction: 'asc' } as const
 const ids = (queue: Queue, filters = emptyFilters) => selectRows(rows, queue, filters, defaultSort).map(row => row.unit.unitId)
 
-test('prepared cohorts retain approved tier ordering and deterministic ties', () => {
-  assert.deepEqual(ids('technician_review'), ['TH-02312', 'TH-02398', 'TH-02395', 'TH-02298'])
+test('prepared cohorts use observed evidence and deterministic Unit ID ties', () => {
+  assert.deepEqual(ids('technician_review'), ['TH-02298', 'TH-02312', 'TH-02395', 'TH-02398'])
   assert.deepEqual(ids('data_connectivity_review'), ['TH-02023', 'TH-02280', 'TH-02304'])
   assert.equal(rows.length, 7)
   assert.equal(data.units.length, 400)
   assert.equal(data.units.filter(unit => unit.hasTelemetry).length, 268)
+})
+
+test('changing service tiers cannot change default priority in either queue', () => {
+  const reversed = [...rows].reverse().map((row, i) => ({ ...row, unit: { ...row.unit, serviceTier: (['free', 'care_plus', 'care', 'optimize'] as const)[i % 4] } }))
+  for (const queue of ['technician_review', 'data_connectivity_review'] as const) {
+    assert.deepEqual(selectRows(reversed, queue, emptyFilters, defaultSort).map(row => row.unit.unitId), ids(queue))
+  }
+})
+
+test('technical review orders persistence before recency, independent of tier', () => {
+  const sample = rows.filter(row => row.attention.queue === 'technician_review').map((row, i) => ({
+    ...row, unit: { ...row.unit, unitId: `TEST-${i}`, serviceTier: (['care_plus', 'free', 'care', 'optimize'] as const)[i] },
+    attention: { ...row.attention, persistenceDays: [2, 14, 14, 14][i], lastObserved: ['2026-07-30', '2026-07-29', '2026-07-30', '2026-07-30'][i] },
+  }))
+  assert.deepEqual(selectRows(sample.reverse(), 'technician_review', emptyFilters, defaultSort).map(row => row.unit.unitId), ['TEST-2', 'TEST-3', 'TEST-1', 'TEST-0'])
+})
+
+test('connectivity review orders stale days before Unit ID, ignoring unrelated recurrence', () => {
+  const sample = rows.filter(row => row.attention.queue === 'data_connectivity_review').map((row, i) => ({
+    ...row, unit: { ...row.unit, unitId: `TEST-${i}` },
+    attention: { ...row.attention, daysStale: [2, 10, 10][i], persistenceDays: [100, 0, 50][i] },
+  }))
+  assert.deepEqual(selectRows(sample.reverse(), 'data_connectivity_review', emptyFilters, defaultSort).map(row => row.unit.unitId), ['TEST-1', 'TEST-2', 'TEST-0'])
 })
 
 test('search matches unit or customer case-insensitively and combines filters', () => {

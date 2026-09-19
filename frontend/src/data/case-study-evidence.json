@@ -1,0 +1,222 @@
+{
+  "sources": [
+    "data/installation_base.csv",
+    "outputs/units_clean.csv",
+    "outputs/telemetry_clean.csv",
+    "outputs/error_code_summary.csv",
+    "frontend/public/data/cockpit.json"
+  ],
+  "reconciliation": {
+    "sourceInstallationRows": 415,
+    "resolvableInstallationRows": 412,
+    "canonicalInstalledUnits": 400,
+    "duplicateSourceRows": 12,
+    "unresolvedInstallationRows": 3,
+    "canonicalTelemetryReferences": 273,
+    "telemetryOnlyReferences": [
+      "TH-90000",
+      "TH-90001",
+      "TH-90002",
+      "TH-90003",
+      "TH-90004"
+    ],
+    "matchedTelemetryUnits": 268,
+    "installedUnitsWithoutTelemetry": 132
+  },
+  "snapshotDate": "2026-07-30",
+  "cohorts": {
+    "technician_review": [
+      {
+        "unitId": "TH-02298",
+        "oem": "C",
+        "latestReading": "2026-07-30",
+        "hasTelemetry": true,
+        "daysStale": 0.0,
+        "signals": [
+          {
+            "type": "persistent_oem_signal",
+            "label": "Persistent OEM signal",
+            "rawSignal": "ALM_HP_LOWFLOW",
+            "persistenceDays": 14,
+            "firstObserved": "2026-07-17",
+            "lastObserved": "2026-07-30"
+          }
+        ]
+      },
+      {
+        "unitId": "TH-02312",
+        "oem": "C",
+        "latestReading": "2026-07-30",
+        "hasTelemetry": true,
+        "daysStale": 0.0,
+        "signals": [
+          {
+            "type": "persistent_oem_signal",
+            "label": "Persistent OEM signal",
+            "rawSignal": "ALM_HP_LOWFLOW",
+            "persistenceDays": 14,
+            "firstObserved": "2026-07-17",
+            "lastObserved": "2026-07-30"
+          }
+        ]
+      },
+      {
+        "unitId": "TH-02395",
+        "oem": "C",
+        "latestReading": "2026-07-30",
+        "hasTelemetry": true,
+        "daysStale": 0.0,
+        "signals": [
+          {
+            "type": "persistent_oem_signal",
+            "label": "Persistent OEM signal",
+            "rawSignal": "ALM_HP_LOWFLOW",
+            "persistenceDays": 14,
+            "firstObserved": "2026-07-17",
+            "lastObserved": "2026-07-30"
+          }
+        ]
+      },
+      {
+        "unitId": "TH-02398",
+        "oem": "C",
+        "latestReading": "2026-07-30",
+        "hasTelemetry": true,
+        "daysStale": 0.0,
+        "signals": [
+          {
+            "type": "persistent_oem_signal",
+            "label": "Persistent OEM signal",
+            "rawSignal": "ALM_HP_LOWFLOW",
+            "persistenceDays": 14,
+            "firstObserved": "2026-07-17",
+            "lastObserved": "2026-07-30"
+          }
+        ]
+      }
+    ],
+    "data_connectivity_review": [
+      {
+        "unitId": "TH-02023",
+        "oem": "A",
+        "latestReading": "2026-07-20",
+        "hasTelemetry": true,
+        "daysStale": 10.0,
+        "signals": [
+          {
+            "type": "telemetry_stopped",
+            "label": "Telemetry stopped",
+            "lastReading": "2026-07-20",
+            "daysStale": 10
+          }
+        ]
+      },
+      {
+        "unitId": "TH-02280",
+        "oem": "B",
+        "latestReading": "2026-07-20",
+        "hasTelemetry": true,
+        "daysStale": 10.0,
+        "signals": [
+          {
+            "type": "telemetry_stopped",
+            "label": "Telemetry stopped",
+            "lastReading": "2026-07-20",
+            "daysStale": 10
+          }
+        ]
+      },
+      {
+        "unitId": "TH-02304",
+        "oem": "C",
+        "latestReading": "2026-07-20",
+        "hasTelemetry": true,
+        "daysStale": 10.0,
+        "signals": [
+          {
+            "type": "telemetry_stopped",
+            "label": "Telemetry stopped",
+            "lastReading": "2026-07-20",
+            "daysStale": 10
+          }
+        ]
+      }
+    ]
+  },
+  "signalFrequency": [
+    {
+      "oem": "B",
+      "rawSignal": "6021",
+      "observations": 2475,
+      "reportingUnitsWithSignal": 98
+    },
+    {
+      "oem": "A",
+      "rawSignal": "E-211",
+      "observations": 143,
+      "reportingUnitsWithSignal": 46
+    },
+    {
+      "oem": "B",
+      "rawSignal": "3104",
+      "observations": 116,
+      "reportingUnitsWithSignal": 47
+    },
+    {
+      "oem": "B",
+      "rawSignal": "7702",
+      "observations": 61,
+      "reportingUnitsWithSignal": 50
+    },
+    {
+      "oem": "C",
+      "rawSignal": "ALM_HP_LOWFLOW",
+      "observations": 56,
+      "reportingUnitsWithSignal": 4
+    },
+    {
+      "oem": "A",
+      "rawSignal": "E-317",
+      "observations": 56,
+      "reportingUnitsWithSignal": 46
+    },
+    {
+      "oem": "C",
+      "rawSignal": "ALM_SM_LINK",
+      "observations": 53,
+      "reportingUnitsWithSignal": 39
+    },
+    {
+      "oem": "A",
+      "rawSignal": "E-104",
+      "observations": 51,
+      "reportingUnitsWithSignal": 38
+    },
+    {
+      "oem": "A",
+      "rawSignal": "E-505",
+      "observations": 47,
+      "reportingUnitsWithSignal": 33
+    },
+    {
+      "oem": "B",
+      "rawSignal": "1188",
+      "observations": 45,
+      "reportingUnitsWithSignal": 39
+    },
+    {
+      "oem": "C",
+      "rawSignal": "ALM_HP_HP_SWITCH",
+      "observations": 44,
+      "reportingUnitsWithSignal": 33
+    }
+  ],
+  "methodology": {
+    "source": "notebooks/02_attention_logic.ipynb",
+    "label": "Prototype heuristic used for this dataset",
+    "minimumReportingDays": 2,
+    "maximumOemPrevalenceExclusivePercent": 20,
+    "recentWindowDaysInclusive": 7,
+    "staleDaysInclusive": 2
+  }
+}

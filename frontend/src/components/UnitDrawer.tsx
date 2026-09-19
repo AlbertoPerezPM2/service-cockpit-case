@@ -83,7 +83,8 @@ export function UnitDrawer({ selected, data, onClose, onPrepareBriefing, suppres
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>Reporting stopped after {formatDate(signal.lastReading)}.</Typography>
               </>}
             </Box>)}
-            {attention?.queue === 'data_connectivity_review' && <Alert severity="info" sx={{ mt: 2 }}>Review telemetry/integration before dispatch.</Alert>}
+            {attention?.queue === 'technician_review' && <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Dispatch remains a planner decision.</Typography>}
+            {attention?.queue === 'data_connectivity_review' && <Alert severity="info" sx={{ mt: 2 }}>Investigate telemetry or integration issues before considering field service.</Alert>}
           </Section>
           <Divider />
           <Section title="Data state">

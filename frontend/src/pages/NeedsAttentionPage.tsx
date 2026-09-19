@@ -69,13 +69,13 @@ export function NeedsAttentionPage({ data, active, briefingVisible, onGenerateBr
       </Box>
       <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2, minHeight: 49, px: 2.5, py: 1, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#fcfdfe' }}>
         <Typography variant="caption" color="text.secondary" aria-live="polite">Showing {rows.length} of {queueCounts[queue]} units in this queue</Typography>
-        {sort.key === 'default' ? <Typography variant="caption" color="text.secondary">Ordered by tier, then evidence</Typography> : <Button size="small" onClick={() => setSort({ key: 'default', direction: 'asc' })}>Reset sorting</Button>}
+        {sort.key === 'default' ? <Typography variant="caption" color="text.secondary">Ordered by observed evidence; service tier is shown for context and does not affect default priority.</Typography> : <Button size="small" onClick={() => setSort({ key: 'default', direction: 'asc' })}>Reset sorting</Button>}
       </Stack>
     </Paper>
     <Typography variant="body2" color="text.secondary" sx={{ mt: 2.5 }}>
       {queue === 'technician_review'
-        ? 'Raw OEM signals require review. Their technical meaning has not been validated.'
-        : 'Review telemetry/integration before dispatch. A stopped data stream does not establish an equipment issue.'}
+        ? 'Repeated equipment signals that merit technical review. Dispatch remains a planner decision. Raw OEM signal meanings have not been validated.'
+        : 'Investigate telemetry or integration issues before considering field service. A stopped data stream does not establish an equipment issue.'}
     </Typography>
     <UnitDrawer selected={selected} data={data} onClose={() => setSelected(null)} onPrepareBriefing={prepareBriefing} suppressed={briefingVisible || !active} />
     {selected && drafts[selected.unit.unitId] && <BriefingConfirmation

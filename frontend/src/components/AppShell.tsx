@@ -37,7 +37,6 @@ export function AppShell({ children, attentionCount, view, onNavigate, onOpenCas
             </Stack>
           </Box>
           <Stack direction="row" spacing={2.5} sx={{ ml: 'auto', alignItems: 'center' }}>
-            <Typography variant="body2" sx={{ color: '#bacbdb', display: { xs: 'none', md: 'block' } }}>Service operations</Typography>
             <Link href={`${import.meta.env.BASE_URL}case-study`} underline="hover" onClick={event => {
               if (!onOpenCaseStudy || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
               event.preventDefault(); onOpenCaseStudy()

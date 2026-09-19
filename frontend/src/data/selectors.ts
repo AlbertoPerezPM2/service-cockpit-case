@@ -4,7 +4,7 @@ export type Filters = { search: string; oem: string; region: string; tier: strin
 export const emptyFilters: Filters = { search: '', oem: '', region: '', tier: '', reason: '' }
 export type SortKey = 'default' | 'tier' | 'latest' | 'region' | 'oem'
 export type Sort = { key: SortKey; direction: 'asc' | 'desc' }
-// Approved categorical ordering, never a priority or severity score.
+// Display order for filters and explicit user sorting only; no SLA is implied.
 export const tierOrder = ['care_plus', 'care', 'optimize', 'free'] as const
 const compareText = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true })
 
@@ -42,10 +42,12 @@ export function selectRows(rows: AttentionRow[], queue: Queue, filters: Filters,
       case 'region': result = compareText(a.unit.region, b.unit.region); break
       case 'oem': result = compareText(a.unit.oem, b.unit.oem); break
       case 'default':
-        return tierOrder.indexOf(a.unit.serviceTier) - tierOrder.indexOf(b.unit.serviceTier)
-          || (b.attention.persistenceDays ?? 0) - (a.attention.persistenceDays ?? 0)
+        if (queue === 'data_connectivity_review') {
+          return (b.attention.daysStale ?? 0) - (a.attention.daysStale ?? 0)
+            || compareText(a.unit.unitId, b.unit.unitId)
+        }
+        return (b.attention.persistenceDays ?? 0) - (a.attention.persistenceDays ?? 0)
           || compareText(b.attention.lastObserved ?? '', a.attention.lastObserved ?? '')
-          || (b.attention.daysStale ?? 0) - (a.attention.daysStale ?? 0)
           || compareText(a.unit.unitId, b.unit.unitId)
     }
     return result * (sort.direction === 'asc' ? 1 : -1) || compareText(a.unit.unitId, b.unit.unitId)

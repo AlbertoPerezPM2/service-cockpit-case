@@ -13,6 +13,7 @@ import { recentUnitTrend } from '../src/data/unitTelemetry.ts'
 const data: CockpitData = JSON.parse(readFileSync(new URL('../public/data/cockpit.json', import.meta.url), 'utf8'))
 let server: ViteDevServer
 let AllUnitsPage: typeof import('../src/pages/AllUnitsPage.tsx').AllUnitsPage
+let NeedsAttentionPage: typeof import('../src/pages/NeedsAttentionPage.tsx').NeedsAttentionPage
 let UnitDrawer: typeof import('../src/components/UnitDrawer.tsx').UnitDrawer
 let AllUnitsTable: typeof import('../src/components/AllUnitsTable.tsx').AllUnitsTable
 let BriefingConfirmation: typeof import('../src/briefing/BriefingConfirmation.tsx').BriefingConfirmation
@@ -29,6 +30,7 @@ function drawerMarkup(selected: UnitSelection): string {
 before(async () => {
   server = await createServer({ server: { middlewareMode: true, ws: false, hmr: false, watch: null }, appType: 'custom' })
   AllUnitsPage = (await server.ssrLoadModule('/src/pages/AllUnitsPage.tsx')).AllUnitsPage
+  NeedsAttentionPage = (await server.ssrLoadModule('/src/pages/NeedsAttentionPage.tsx')).NeedsAttentionPage
   UnitDrawer = (await server.ssrLoadModule('/src/components/UnitDrawer.tsx')).UnitDrawer
   AllUnitsTable = (await server.ssrLoadModule('/src/components/AllUnitsTable.tsx')).AllUnitsTable
   BriefingConfirmation = (await server.ssrLoadModule('/src/briefing/BriefingConfirmation.tsx')).BriefingConfirmation
@@ -82,10 +84,20 @@ test('existing attention drawers retain their evidence/CTA behavior when selecte
   assert.ok(!technician.includes('Recent trend'))
   assert.ok(!technician.includes('Latest values'))
   assert.ok(!technician.includes('No active attention signals'))
+  assert.ok(technician.includes('Dispatch remains a planner decision.'))
   const connectivity = drawerMarkup(selectUnit(data, 'TH-02023')!)
-  assert.ok(connectivity.includes('Review telemetry/integration before dispatch.'))
+  assert.ok(connectivity.includes('Investigate telemetry or integration issues before considering field service.'))
   assert.ok(!connectivity.includes('Prepare Technical Visit Briefing'))
   assert.ok(!connectivity.includes('Recent trend'))
+})
+
+test('default worklist explains evidence ordering and separates technical review from dispatch', () => {
+  const html = renderToStaticMarkup(createElement(NeedsAttentionPage, { data, active: true, briefingVisible: false, onGenerateBriefing() {} }))
+  assert.ok(html.includes('Ordered by observed evidence; service tier is shown for context and does not affect default priority.'))
+  assert.ok(html.includes('Repeated equipment signals that merit technical review. Dispatch remains a planner decision.'))
+  assert.ok(!html.includes('Ordered by tier'))
+  const unitIds = ['TH-02298', 'TH-02312', 'TH-02395', 'TH-02398']
+  for (let i = 1; i < unitIds.length; i++) assert.ok(html.indexOf(unitIds[i - 1]) < html.indexOf(unitIds[i]))
 })
 
 test('table shows actual dates without redundant Current age text and preserves no-readings copy', () => {

@@ -1,249 +1,245 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Box, Button, Stack, Typography } from '@mui/material'
+import { Box, Button, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
 import ArrowBack from '@mui/icons-material/ArrowBack'
 import ArrowForward from '@mui/icons-material/ArrowForward'
 import { CustomGptSetup } from './CustomGptSetup'
+import { caseStudyEvidence as evidence } from '../data/caseStudyEvidence'
+import { formatDate } from '../data/formatters'
 
-const statementStyle = { fontSize: { xs: '1.0625rem', md: '1.25rem' }, lineHeight: 1.6 }
+const statementStyle = { fontSize: { xs: '1rem', md: '1.125rem' }, lineHeight: 1.6 }
+const columns = { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: { xs: 3, md: 5 } }
+const facts = evidence.reconciliation
+const technical = evidence.cohorts.technician_review
+const connectivity = evidence.cohorts.data_connectivity_review
+const signal = technical[0].signals[0]
+const heuristic = evidence.methodology
 
-function Statements({ children }: { children: ReactNode }) {
-  return <Box component="ul" sx={{ m: 0, pl: 2.75, '& li': { pl: 0.5, mb: 1.75, ...statementStyle }, '& li:last-child': { mb: 0 }, '& li::marker': { color: '#8b9caf' } }}>{children}</Box>
+function Statements({ children, ordered = false }: { children: ReactNode; ordered?: boolean }) {
+  return <Box component={ordered ? 'ol' : 'ul'} sx={{ m: 0, pl: 2.5, '& li': { pl: 0.5, mb: 0.75, ...statementStyle }, '& li:last-child': { mb: 0 }, '& li::marker': { color: '#738397' } }}>{children}</Box>
 }
-
+function Label({ children }: { children: ReactNode }) {
+  return <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>{children}</Typography>
+}
+function Subheading({ children }: { children: ReactNode }) {
+  return <Typography component="h2" variant="h3" sx={{ mb: 1.5 }}>{children}</Typography>
+}
 function LabeledNote({ label, children }: { label: string; children: ReactNode }) {
-  return <Box component="aside" sx={{ mt: 3, pl: 2.5, maxWidth: 880, borderLeft: '2px solid', borderColor: 'divider' }}>
-    <Typography variant="overline" color="text.secondary">{label}</Typography>
-    <Typography sx={{ mt: 0.5, fontSize: '1.0625rem', lineHeight: 1.6 }}>{children}</Typography>
+  return <Box component="aside" sx={{ mt: 3, pl: 2.5, maxWidth: '80ch', borderLeft: '2px solid', borderColor: 'divider' }}>
+    <Label>{label}</Label><Typography sx={statementStyle}>{children}</Typography>
   </Box>
 }
-
-function Narrative({ children }: { children: ReactNode }) {
-  return <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid', borderColor: 'divider', maxWidth: '76ch', fontSize: '1rem', lineHeight: 1.75, '& p': { mt: 0, mb: 2 }, '& p:last-child': { mb: 0 } }}>{children}</Box>
+function EvidenceTable({ headers, rows, label }: { headers: string[]; rows: ReactNode[][]; label: string }) {
+  return <TableContainer tabIndex={0} role="region" aria-label={label} sx={{ mb: 2, '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' } }}>
+    <Table size="small" sx={{ minWidth: 660, '& th, & td': { verticalAlign: 'top', py: 1.5, px: 1.5, fontSize: '0.875rem', lineHeight: 1.6 }, '& th': { fontWeight: 600 } }}>
+      <TableHead><TableRow>{headers.map(header => <TableCell key={header} scope="col">{header}</TableCell>)}</TableRow></TableHead>
+      <TableBody>{rows.map((row, index) => <TableRow key={index}>{row.map((cell, column) => <TableCell key={column} component={column === 0 ? 'th' : 'td'} scope={column === 0 ? 'row' : undefined}>{cell}</TableCell>)}</TableRow>)}</TableBody>
+    </Table>
+  </TableContainer>
 }
 
 const slides = [
   {
-    question: 'What problem am I solving?',
+    question: 'A service planner cockpit for deciding what deserves attention this morning',
     content: <>
-      <Statements>
-        <li>Service triage is fragmented across incomplete tools.</li>
-        <li>Planners lack a trusted fleet-wide view of which units need attention.</li>
-        <li>Technicians can arrive on site without enough context.</li>
-      </Statements>
-      <Typography component="h2" variant="overline" color="text.secondary" sx={{ mt: 3, mb: 1 }}>Problem statement</Typography>
-      <Typography sx={{ ...statementStyle, maxWidth: 880 }}>Service teams need a faster, more reliable way to turn heterogeneous heat-pump data into actionable service decisions before dispatch.</Typography>
-      <Typography component="h2" variant="overline" color="text.secondary" sx={{ mt: 3, mb: 1 }}>Primary use case</Typography>
-      <Typography sx={{ maxWidth: 880, fontSize: '1.0625rem', lineHeight: 1.6 }}>As a service planner, when I start the day and review the installed fleet, I want to see a short, explainable list of units that deserve attention and understand why each surfaced, so that I can decide whether to prepare a technician handover or investigate a data/connectivity issue before dispatch.</Typography>
+      <Label>Primary user</Label><Typography sx={{ ...statementStyle, mb: 2 }}>Service planner / dispatcher</Typography>
+      <Label>Problem statement</Label>
+      <Typography sx={{ ...statementStyle, maxWidth: '80ch', mb: 2 }}>The service team currently has fragmented information and cannot reliably turn fleet telemetry into a short list of units worth investigating before a technician is sent.</Typography>
+      <Label>Primary use case</Label>
+      <Typography sx={{ maxWidth: '85ch', lineHeight: 1.7, mb: 4 }}>As a service planner, when I start the day and review the installed fleet, I want to see a short, explainable list of units that deserve attention and understand why each surfaced, so that I can decide whether to prepare a technician handover or investigate a data/connectivity issue before dispatch.</Typography>
+      <Box sx={columns}>
+        <Box><Subheading>Requirements / build order</Subheading><Statements ordered>
+          <li>Resolve a trustworthy fleet identity and show data freshness.</li>
+          <li>Produce a small, explainable morning attention list.</li>
+          <li>Let the planner inspect the underlying evidence.</li>
+          <li>Separate equipment review from data/connectivity investigation.</li>
+          <li>Support known-unit lookup across the installed base.</li>
+          <li>Prepare a technician handoff only after the planner decides a visit may be warranted.</li>
+        </Statements></Box>
+        <Box><Subheading>Non-goals</Subheading><Statements>
+          <li>Remote settings / reset / write actions.</li>
+          <li>Automatic diagnosis or repair recommendations.</li>
+          <li>Universal cross-OEM health / severity score.</li>
+          <li>Persistent dispatch / case-management workflow.</li>
+          <li>Cross-OEM efficiency benchmarking.</li>
+        </Statements><Typography color="text.secondary" sx={{ mt: 2 }}>These require safety controls, workflow state, OEM semantics, integrations, or data contracts that the supplied dataset does not support.</Typography></Box>
+      </Box>
+      <LabeledNote label="Assumption">Starting with the planner creates more leverage than a technician-first interface because improving the upstream decision can prevent or better prepare downstream field visits.</LabeledNote>
+      <Typography color="text.secondary" sx={{ mt: 2, maxWidth: '85ch' }}>The planner sits upstream of dispatch. Technician-first improves one case at a time; planner-first may influence many downstream technician interactions.</Typography>
     </>,
   },
   {
-    question: 'Why start with the service planner?',
+    question: 'How many heat pumps are actually in the dataset?',
     content: <>
-      <Statements>
-        <li>The planner sits upstream of dispatch and influences which cases become field work.</li>
-        <li>Current planning relies on fragmented, incomplete visibility.</li>
-        <li>Better triage can potentially reduce avoidable investigation and repeat visits.</li>
-        <li>A technician-first solution improves one case at a time; planner-first can shape many downstream technician hours.</li>
-      </Statements>
-      <LabeledNote label="Assumption">Improving planner triage creates greater near-term operational leverage than optimizing one technician case at a time.</LabeledNote>
-      <Narrative>
-        <p>I considered two starting points: a planner-first cockpit and a technician-first diagnostic view. Both address real pain, but I prioritized the planner because the decision happens earlier in the service journey. If the planner can identify the right units, distinguish equipment-review cases from data/connectivity issues, and package useful evidence before dispatch, that can improve the quality of many downstream technician interactions.</p>
-        <p>A technician-first experience would still be valuable, particularly for richer diagnosis and on-site context. However, it optimizes one case at a time and risks becoming another telemetry viewer rather than solving the upstream coordination problem.</p>
-        <p>The MVP therefore starts with planner-led triage, while preserving a secondary All Units view for technicians and other users who need to look up a known installation. The attention item then becomes the handover object into the technician workflow.</p>
-        <p>The key trade-off is that this choice prioritizes operational leverage over diagnostic depth in v1. I would validate the assumption by measuring avoidable dispatches, repeat visits, no-fault-found cases, and whether planners can make routing decisions without switching tools.</p>
-      </Narrative>
+      <Label>Observed</Label>
+      <EvidenceTable label="Fleet reconciliation" headers={['Source / reconciliation', 'Count', 'Interpretation']} rows={[
+        [<code>installation_base.csv</code>, facts.sourceInstallationRows, 'Source rows'],
+        ['Resolvable installation rows', facts.resolvableInstallationRows, `${facts.canonicalInstalledUnits} unique canonical heat-pump references; ${facts.duplicateSourceRows} duplicate source rows after reconciliation`],
+        ['Unresolved installation rows', facts.unresolvedInstallationRows, 'No usable reference number; cannot safely link'],
+        ['Canonical telemetry references', facts.canonicalTelemetryReferences, `${facts.telemetryOnlyReferences.length} do not occur in the installation base`],
+        ['Installed units with matched telemetry', facts.matchedTelemetryUnits, `Of ${facts.canonicalInstalledUnits} resolved installed units`],
+        ['Installed units without matched telemetry', facts.installedUnitsWithoutTelemetry, 'Visible in All Units; no readings'],
+      ]} />
+      <Label>Telemetry-only references — retained as exceptions</Label>
+      <Typography className="unit-id" sx={{ ...statementStyle, overflowWrap: 'anywhere' }}>{facts.telemetryOnlyReferences.join(' · ')}</Typography>
+      <LabeledNote label="Product decision">I use the {facts.canonicalInstalledUnits} canonical installation records as the cockpit fleet. I do not force-match the {facts.unresolvedInstallationRows} reference-less installation rows or the {facts.telemetryOnlyReferences.length} telemetry-only references; I treat them as data-quality exceptions.</LabeledNote>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>Source: installation_base.csv, canonical prepared outputs and the committed frontend snapshot. Reconciliation is checked against the saved analysis; unresolved records are not silently counted as installed units.</Typography>
+      <Button component="a" href="https://github.com/AlbertoPerezPM2/service-cockpit-case/blob/main/notebooks/01_eda.ipynb" target="_blank" rel="noopener noreferrer" size="small" sx={{ mt: 2, px: 0 }}>View EDA notebook on GitHub ↗</Button>
     </>,
   },
   {
-    question: 'What did the data tell me?',
+    question: 'What can this dataset actually tell us?',
     content: <>
-      <Statements>
-        <li><strong>400</strong> resolved units after identity cleanup and deduplication.</li>
-        <li><strong>268</strong> units with telemetry in the supplied period.</li>
-        <li>OEM coverage and field availability differ materially.</li>
-        <li>Data freshness and source consistency are as important as raw measurements.</li>
-        <li>Cross-OEM energy values are not directly comparable from the supplied data.</li>
-      </Statements>
-      <Typography sx={{ ...statementStyle, mt: 3 }}>The cockpit should not treat all OEM data as equally complete or equally interpretable.</Typography>
-      <LabeledNote label="Hypothesis to validate">Some recurring raw signals are useful for prioritization even before their technical meaning is fully documented.</LabeledNote>
-      <Button component="a" href="https://github.com/AlbertoPerezPM2/service-cockpit-case/blob/main/notebooks/01_eda.ipynb" target="_blank" rel="noopener noreferrer" size="small" sx={{ mt: 3, px: 0 }}>View EDA notebook on GitHub ↗</Button>
+      <Typography color="text.secondary" sx={{ mb: 2 }}>Observed measurements support investigation. They do not establish a universal equipment verdict.</Typography>
+      <EvidenceTable label="Dataset capabilities and limitations" headers={['Question', 'Answer', 'Evidence / limitation', 'Product implication']} rows={[
+        ['Efficiency', 'Partly answers', <>
+          OEM A contains electrical and thermal energy. OEM B and C lack comparable thermal-energy coverage.<br />
+          The case warns that electrical-energy semantics differ between vendors. A fleet-wide comparable efficiency / COP metric is unsupported.
+        </>, 'Do not put cross-OEM efficiency on the front page. Explore within-OEM or within-unit trends only after field semantics are validated.'],
+        ['Is it delivering hot water?', 'Partly answers', <>
+          OEM A has useful DHW-temperature coverage; OEM C is intermittent; OEM B does not provide the field.<br />
+          A daily temperature statistic does not prove delivery at the tap when requested.
+        </>, 'Use DHW data as supporting evidence where present, not as a universal fleet-status flag.'],
+        ['Is it heating at all?', 'Partly answers', <>
+          OEM A has stronger flow / return temperature, operating-state and energy evidence. OEM B and C have weaker, incomplete temperature coverage.<br />
+          Daily telemetry cannot prove that a building received the requested space heat.
+        </>, <>Show observed operating evidence, but avoid a universal “heating / not heating” verdict.</>],
+        ['Is a fault recurring or one-off?', 'Partly answers', <>
+          Dates and <code>error_code_raw</code> show repeated raw signals. No authoritative code semantics are supplied.<br />
+          Raw-signal recurrence is observable; recurrence of a confirmed technical fault is not.
+        </>, <>Say “repeated raw signal”, not “confirmed recurring fault”.</>],
+      ]} />
+      <Typography variant="body2" color="text.secondary">Field availability describes the supplied extract, not a formal OEM capability contract.</Typography>
     </>,
   },
   {
-    question: 'What deserves attention first?',
+    question: 'Tomorrow morning: what deserves review?',
+    content: <Box sx={columns}>
+      <Box><Subheading>{technical.length} units merit technical review</Subheading>
+        <Typography className="unit-id" sx={{ mb: 2, lineHeight: 1.8 }}>{technical.map(row => row.unitId).join(' · ')}</Typography>
+        <Label>Observed</Label><Statements>
+          <li>All four are OEM C units.</li>
+          <li>Each shows raw signal <code>{signal.rawSignal}</code> on {signal.persistenceDays} observed days.</li>
+          <li>Observed period: {formatDate(signal.firstObserved ?? null)} – {formatDate(signal.lastObserved ?? null)}.</li>
+          <li>The code is concentrated in these four reporting OEM C units rather than being widespread across the OEM population.</li>
+        </Statements>
+        <Typography sx={{ ...statementStyle, mt: 3 }}>Medium confidence that these four deserve technical review. Low confidence in the technical diagnosis or whether a field visit is required.</Typography>
+        <Typography color="text.secondary" sx={{ mt: 2 }}>The recurrence and rarity are supported by the supplied data. The meaning of <code>ALM_HP_LOWFLOW</code> is not documented in the case, so the cockpit must not translate the code into a diagnosis or automatically dispatch a technician.</Typography>
+        <Typography sx={{ mt: 2, fontWeight: 600 }}>Dispatch remains a planner decision.</Typography>
+      </Box>
+      <Box sx={{ borderLeft: { md: '1px solid' }, borderColor: { md: 'divider' }, pl: { md: 4 } }}><Subheading>{connectivity.length} units should go to data/connectivity investigation first</Subheading>
+        <Typography className="unit-id" sx={{ mb: 2, lineHeight: 1.8 }}>{connectivity.map(row => row.unitId).join(' · ')}</Typography>
+        <Label>Observed</Label><Statements>
+          <li>Each previously reported telemetry.</li>
+          <li>Each stops reporting on {formatDate(connectivity[0].latestReading)}.</li>
+          <li>Dataset snapshot runs through {formatDate(evidence.snapshotDate)}; gap = {connectivity[0].daysStale} days.</li>
+          <li>Units span different OEMs.</li>
+        </Statements>
+        <Typography sx={{ ...statementStyle, mt: 3 }}>High confidence that telemetry stopped; low confidence that the heat pump itself needs a field visit.</Typography>
+        <Typography sx={{ mt: 2, fontWeight: 600 }}>Investigate data/connectivity before considering field service.</Typography>
+      </Box>
+    </Box>,
+  },
+  {
+    question: 'The most frequent signal is not necessarily the most useful one',
     content: <>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: { xs: 3, md: 5 } }}>
-        <Box component="section" aria-labelledby="case-technician-review">
-          <Typography component="h2" id="case-technician-review" variant="h2" sx={{ mb: 2 }}>Technician review</Typography>
-          <Statements>
-            <li><strong>4 units</strong></li>
-            <li>Persistent OEM signal</li>
-            <li><Box component="span" className="raw-signal">ALM_HP_LOWFLOW</Box></li>
-            <li>Observed on <strong>14 reporting days</strong></li>
-            <li>Technical meaning not validated</li>
-          </Statements>
+      <Label>Observed</Label>
+      <EvidenceTable label="Raw signal frequency" headers={['OEM', 'Raw signal', 'Observations', 'Reporting units', 'MVP interpretation']} rows={evidence.signalFrequency.slice(0, 6).map(row => [
+        row.oem, <code>{row.rawSignal}</code>, row.observations.toLocaleString('en'), row.reportingUnitsWithSignal,
+        row.rawSignal === 'ALM_HP_LOWFLOW' ? 'Candidate for technical review' : row.rawSignal === '6021' ? 'Keep off front page' : 'Keep off front page by default',
+      ])} />
+      <Typography variant="body2" color="text.secondary">Source: error_code_summary.csv. “Reporting units” counts units with that raw signal; observations are not confirmed faults.</Typography>
+      <Typography sx={{ ...statementStyle, mt: 3, maxWidth: '85ch' }}>I do not suppress code <code>6021</code> because I know it is harmless. I suppress it because it appears on essentially every reporting OEM B unit and there is no supplied code dictionary explaining its meaning. It is therefore not discriminating enough for a short attention list.</Typography>
+      <Typography sx={{ ...statementStyle, mt: 2, maxWidth: '85ch' }}>I surface <code>ALM_HP_LOWFLOW</code> as a raw signal, not a diagnosis, because its combination of recurrence, recency and low prevalence makes it more useful for prioritization.</Typography>
+      <LabeledNote label="Hypothesis to validate">Recent, repeated, low-prevalence raw signals are more useful for initial planner triage than ubiquitous undocumented signals.</LabeledNote>
+      <LabeledNote label="Hypothesis to validate">A multi-day telemetry gap on a unit that previously reported is worth data/connectivity investigation.</LabeledNote>
+      <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Label>{heuristic.label}</Label>
+        <Typography variant="body2" color="text.secondary">Persistent raw signal: ≥{heuristic.minimumReportingDays} reporting days; &lt;{heuristic.maximumOemPrevalenceExclusivePercent}% of reporting units within that OEM; last observed ≤{heuristic.recentWindowDaysInclusive} days before the snapshot.</Typography>
+        <Typography variant="body2" color="text.secondary">Stale telemetry: previously reporting; latest reading ≥{heuristic.staleDaysInclusive} days before the snapshot.</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Dataset-specific heuristics, not industry rules, OEM specifications, SLAs or validated service policy.</Typography>
+      </Box>
+    </>,
+  },
+  {
+    question: 'What did I build?',
+    content: <>
+      <Typography sx={{ fontSize: { xs: '1.375rem', md: '1.875rem' }, fontWeight: 600, mb: 4 }}>Detect → Inspect → Decide → Hand over</Typography>
+      <Statements>
+        <li><strong>Needs Attention</strong> — short explainable worklist.</li>
+        <li><strong>Evidence drawer</strong> — why the unit surfaced and how current the data is.</li>
+        <li><strong>Technical Visit Briefing</strong> — structured evidence handover after planner review.</li>
+        <li><strong>All Units</strong> — secondary known-unit lookup.</li>
+      </Statements>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 4, maxWidth: '85ch' }}>Beyond MVP: evolve the attention item into a persistent service case so planners can see whether a unit is already reviewed, assigned, en route or resolved. Start with lightweight manual state; later synchronize with dispatch / ticketing systems.</Typography>
+    </>,
+  },
+  {
+    question: 'How would I validate next?',
+    content: <>
+      <Box sx={{ display: 'grid', gap: 3 }}>
+        <Box><Subheading>Signal quality</Subheading><Label>Hypothesis to validate</Label>
+          <Typography sx={statementStyle}>The four surfaced technical-review units correspond more often to genuine service needs than a random or high-frequency-code baseline.</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>Historical backtest: link surfaced cases to service outcomes if available; evaluate actionability, false positives and lead time before eventual service events.</Typography>
         </Box>
-        <Box component="section" aria-labelledby="case-connectivity-review" sx={{ borderLeft: { sm: '1px solid' }, borderTop: { xs: '1px solid', sm: 0 }, borderColor: 'divider', pl: { sm: 4 }, pt: { xs: 3, sm: 0 } }}>
-          <Typography component="h2" id="case-connectivity-review" variant="h2" sx={{ mb: 2 }}>Data / connectivity review</Typography>
-          <Statements>
-            <li><strong>3 units</strong></li>
-            <li>Previously reporting</li>
-            <li>Telemetry stopped <strong>10 days</strong> before the snapshot</li>
-            <li>Investigate data/integration before dispatch</li>
-          </Statements>
+        <Box><Subheading>Routing quality</Subheading><Label>Hypothesis to validate</Label>
+          <Typography sx={statementStyle}>Separating telemetry/data issues from equipment review reduces avoidable field investigation.</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>Track planners’ decisions on connectivity cases, unnecessary truck rolls and no-fault-found visits where the source problem was data rather than equipment.</Typography>
+        </Box>
+        <Box><Subheading>Planner efficiency</Subheading><Label>Hypothesis to validate</Label>
+          <Typography sx={statementStyle}>A short explainable list reduces planner triage effort without hiding important cases.</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>Planner shadow mode: measure triage time, tool switching, actionability of surfaced items and missed high-concern cases.</Typography>
         </Box>
       </Box>
-      <Typography sx={{ ...statementStyle, mt: 4 }}>Prioritize with explainable evidence, not a universal health or severity score.</Typography>
-      <LabeledNote label="Hypothesis to validate">Persistence + rarity can be a useful prioritization signal even before OEM code semantics are fully documented.</LabeledNote>
+      <Typography sx={{ ...statementStyle, fontWeight: 600, mt: 4 }}>Historical backtest → planner shadow mode → small live pilot</Typography>
+      <Typography color="text.secondary" sx={{ mt: 1 }}>Set quantitative targets after establishing the baseline.</Typography>
+      <LabeledNote label="Guardrail">Uncertain telemetry must never become unsupported diagnosis.</LabeledNote>
     </>,
   },
   {
-    question: 'What did I deliberately leave out?',
+    question: 'The one missing dependency I would pursue first',
     content: <>
+      <Typography sx={{ ...statementStyle, fontWeight: 600, mb: 3 }}>Authoritative OEM C service-code semantics for <code>error_code_raw</code>, especially <code>ALM_HP_LOWFLOW</code>.</Typography>
       <Statements>
-        <li>Remote control / settings changes<Typography color="text.secondary">Safety, identity, permissions, auditability</Typography></li>
-        <li>Technician assignment / dispatching<Typography color="text.secondary">Requires workflow ownership and integration</Typography></li>
-        <li>Dismiss / snooze / resolve<Typography color="text.secondary">Requires persistent alert lifecycle</Typography></li>
-        <li>Automated diagnosis / repair recommendations<Typography color="text.secondary">OEM semantics are not validated</Typography></li>
-        <li>Cross-OEM efficiency scoring<Typography color="text.secondary">Energy fields are not comparable enough</Typography></li>
+        <li>The strongest technical-review cohort in the supplied data is driven by this OEM C raw signal.</li>
+        <li>Today the product can describe its recurrence, recency, and rarity.</li>
+        <li>It cannot confidently explain the signal’s technical meaning.</li>
+        <li>Valid service-code semantics could make the planner / technician handoff materially more actionable without jumping prematurely to remote control.</li>
       </Statements>
-      <Typography sx={{ ...statementStyle, mt: 3 }}>If a capability is not required to validate planner-led triage, it stays out of v1.</Typography>
-      <Narrative>
-        <p>The MVP deliberately stops before transactional and safety-critical workflows. Remote actions such as restart, shutdown, or settings changes are especially sensitive because they require reliable unit identity, authorization, audit trails, and validated OEM command semantics. The case itself includes a wrong-unit reset, which makes those safeguards a prerequisite rather than an implementation detail.</p>
-        <p>I also excluded technician assignment, dispatching, and alert-resolution state. Those capabilities would require persistence, ownership rules, scheduling logic, and integration with existing operational systems. They are plausible next steps, but they are not necessary to test whether the cockpit improves triage quality.</p>
-        <p>Automated diagnosis and repair recommendations are also out of scope. The supplied OEM codes and telemetry semantics are not documented well enough to support that level of inference safely. Likewise, I avoided a universal health score or cross-OEM efficiency ranking because it would create false precision from heterogeneous data.</p>
-        <p>The scope boundary is intentional: validate attention, evidence, routing, and handover first; add workflow automation and control only once the underlying data and operational model are trusted.</p>
-        <Typography component="h2" variant="overline" color="text.secondary" sx={{ mt: 3, mb: 1 }}>Beyond the MVP</Typography>
-        <p>The same attention object could evolve into a traceable service case: Needs attention → Reviewed → Technician assigned → En route → Resolved. This could start with lightweight manual status updates and later synchronize with dispatch or ticketing systems.</p>
-      </Narrative>
-    </>,
-  },
-  {
-    question: 'How would I validate it?',
-    content: <>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: { xs: 4, md: 6 } }}>
-        <Box component="section" aria-labelledby="case-backtest">
-          <Typography component="h2" id="case-backtest" variant="h2">Historical backtest — 3 months</Typography>
-          <LabeledNote label="Assumption">~300–500 historical service cases can be linked to telemetry and technician outcomes.</LabeledNote>
-          <Typography component="h3" variant="overline" color="text.secondary" sx={{ mt: 3, mb: 1.5 }}>Measures / acceptance criteria</Typography>
-          <Statements>
-            <li><strong>≥65%</strong> of surfaced technician-review cases judged actionable</li>
-            <li><strong>≤20%</strong> false-positive rate</li>
-            <li><strong>≥1 day</strong> median earlier detection for cases that later required service</li>
-          </Statements>
-        </Box>
-        <Box component="section" aria-labelledby="case-shadow-mode">
-          <Typography component="h2" id="case-shadow-mode" variant="h2">Shadow mode — 2 weeks</Typography>
-          <LabeledNote label="Assumption">3 planners review the cockpit alongside the current process.</LabeledNote>
-          <Typography component="h3" variant="overline" color="text.secondary" sx={{ mt: 3, mb: 1.5 }}>Measures / acceptance criteria</Typography>
-          <Statements>
-            <li><strong>≥75%</strong> agreement with surfaced attention items</li>
-            <li><strong>≥85%</strong> agreement on technician vs data/connectivity routing</li>
-            <li><strong>≤10%</strong> of data/connectivity cases escalated toward field service</li>
-            <li><strong>&lt;5%</strong> high-concern misses among planner-identified cases</li>
-          </Statements>
-        </Box>
+      <LabeledNote label="Open question">What does <code>ALM_HP_LOWFLOW</code> officially mean in OEM C service documentation?</LabeledNote>
+      <LabeledNote label="Assumption">Thermondo has an internal owner of the OEM C integration or vendor relationship who can obtain or validate OEM C technical service-code documentation.</LabeledNote>
+      <Box sx={{ ...columns, mt: 3 }}>
+        <Box><Subheading>Who would need to deliver it</Subheading><Typography>Thermondo's OEM C integration / vendor owner together with the OEM C technical or service contact.</Typography><Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Role to identify; the brief does not confirm an internal team name.</Typography></Box>
+        <Box><Subheading>Difficulty: Medium / externally dependent.</Subheading><Typography color="text.secondary">The information likely exists on the manufacturer side, but access, versioning, and permission to operationalize it may require vendor coordination.</Typography></Box>
       </Box>
-      <Narrative>
-        <p>I would first validate signal quality without changing operations. A three-month historical backtest would measure whether the attention rules surface cases that later proved actionable and whether they provide meaningful lead time before service events.</p>
-        <p>I would then run the cockpit in shadow mode for two weeks with a small planner group. Recommendations would be visible, but existing dispatch decisions would remain unchanged. This would let me measure planner agreement, routing quality, false positives, and missed cases before moving to a live operational pilot.</p>
-      </Narrative>
-    </>,
-  },
-  {
-    question: 'What would success look like in a live pilot?',
-    content: <>
-      <Stack spacing={0.5} sx={{ mb: 3 }}>
-        <Typography sx={{ ...statementStyle, fontWeight: 600 }}>4-week pilot</Typography>
-        <Typography sx={statementStyle}>3–5 planners + 8–12 technicians</Typography>
-        <Typography color="text.secondary">Compare against a comparable baseline period</Typography>
-      </Stack>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: { xs: 4, md: 6 } }}>
-        <Box component="section" aria-labelledby="case-pilot-targets">
-          <Typography component="h2" id="case-pilot-targets" variant="h2" sx={{ mb: 2 }}>Success targets</Typography>
-          <Statements>
-            <li><strong>20–30%</strong> lower median planner triage time</li>
-            <li><strong>≥25%</strong> fewer cases requiring another tool before routing</li>
-            <li><strong>10–15%</strong> fewer repeat / no-fault-found visits</li>
-            <li><strong>15–20%</strong> lower technician preparation time</li>
-            <li><strong>≥10%</strong> fewer avoidable field escalations among cockpit-surfaced cases</li>
-          </Statements>
-        </Box>
-        <Box component="section" aria-labelledby="case-pilot-guardrails">
-          <Typography component="h2" id="case-pilot-guardrails" variant="h2" sx={{ mb: 2 }}>Guardrails</Typography>
-          <Statements>
-            <li><strong>&lt;20%</strong> false-positive technician-review rate</li>
-            <li><strong>&lt;10%</strong> planner override of technician/data queue classification</li>
-            <li><strong>0</strong> unsupported diagnosis shown to planners or technicians</li>
-            <li><strong>0</strong> briefings generated without triggering evidence</li>
-          </Statements>
-        </Box>
+      <Box component="blockquote" sx={{ mx: 0, mt: 4, mb: 0, pl: 2.5, borderLeft: '2px solid', borderColor: 'divider', maxWidth: '85ch' }}>
+        <Label>First-week working message</Label>
+        <Typography sx={{ lineHeight: 1.7 }}>Hi — I’m validating a service-triage rule using OEM C telemetry. Four units repeatedly emit <code>ALM_HP_LOWFLOW</code>, but we do not have an authoritative mapping for <code>error_code_raw</code>, so I don’t want to turn the label into a diagnosis. Could you share the current OEM C service-code documentation for this signal — ideally code meaning and whether it normally requires service action — or connect me to the technical owner who can validate it? A partial answer for this code is enough for the first version. I’m not asking for write access yet.</Typography>
       </Box>
-      <Narrative>
-        <p>In the live pilot, I would optimize for faster, better-informed routing rather than alert volume. The primary outcome is reduced triage effort; downstream metrics test whether that translates into better field-service efficiency.</p>
-        <p>The main guardrail is false confidence. Data freshness must not be interpreted as equipment health, and undocumented OEM signals must not be presented as diagnosis. For that reason, I would track false positives, planner overrides, routing errors, and briefing completeness alongside the primary metrics.</p>
-      </Narrative>
     </>,
   },
   {
-    question: 'How did I use AI?',
+    question: 'How I built and reviewed this with AI',
     content: <>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: { xs: 4, md: 6 } }}>
-        <Box component="section" aria-labelledby="case-custom-gpt">
-          <Typography component="h2" id="case-custom-gpt" variant="h2">Wattson McStudyson — Custom GPT</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, mb: 2.5 }}>GPT-5.6 Sol</Typography>
-          <Statements>
-            <li>case framing and assumption challenge</li>
-            <li>prioritization and MVP scope</li>
-            <li>metrics, risks, and trade-offs</li>
-            <li>narrative refinement</li>
-            <li>Codex prompt design</li>
-          </Statements>
-          <CustomGptSetup />
-        </Box>
-        <Box component="section" aria-labelledby="case-codex-cli">
-          <Typography component="h2" id="case-codex-cli" variant="h2">Codex CLI</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, mb: 2.5 }}>GPT-6 Astra — High reasoning</Typography>
-          <Statements>
-            <li>inspecting prepared data outputs</li>
-            <li>implementing the React + TypeScript + MUI prototype</li>
-            <li>validating joins, counts, and edge cases</li>
-            <li>iterative implementation with review gates between phases</li>
-          </Statements>
-        </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>Approximate retrospective breakdown · 4h30 total</Typography>
+      <Box sx={columns}>
+        <Box><Subheading>1 · Human framing</Subheading><Label>~40 min</Label><Typography>I defined the primary user, problem / JTBD, non-goals, acceptance criteria and evidence-vs-diagnosis rule.</Typography></Box>
+        <Box><Subheading>2 · AI-assisted exploration</Subheading><Label>~55 min</Label><Typography>Wattson McStudyson — Custom GPT</Typography><Typography variant="body2" color="text.secondary">GPT-5.6 Sol</Typography><Typography sx={{ mt: 1 }}>Challenge assumptions; structure the case; pressure-test prioritization; refine metrics and trade-offs; prepare implementation prompts.</Typography><CustomGptSetup /></Box>
+        <Box><Subheading>3 · Human verification</Subheading><Label>~65 min</Label><Typography>I manually checked joins, unit reconciliation, OEM counts, telemetry coverage, raw-signal recurrence, attention cohorts, exclusions and whether interpretations were supported by source data.</Typography><Typography color="text.secondary" sx={{ mt: 1 }}>Unsupported semantic conclusions were rejected.</Typography></Box>
+        <Box><Subheading>4 · AI-assisted implementation</Subheading><Label>~70 min</Label><Typography>Codex CLI</Typography><Typography variant="body2" color="text.secondary">GPT-6 Astra — High reasoning</Typography><Typography sx={{ mt: 1 }}>Inspect prepared outputs; implement the constrained React + TypeScript + MUI application; create deterministic checks; iterate through review gates.</Typography></Box>
+        <Box><Subheading>5 · Independent AI review</Subheading><Label>~20 min</Label><Typography>I added an independent review pass using a separate AI agent to challenge the completed solution from a fresh perspective — looking for unsupported assumptions, missing assignment questions, product-logic inconsistencies and overclaiming.</Typography><Typography color="text.secondary" sx={{ mt: 1 }}>I treated its output as critique rather than instruction: each recommendation was checked against the source data, the assignment and the product decisions before being accepted or rejected.</Typography></Box>
+        <Box><Subheading>6 · Human arbitration</Subheading><Label>~20 min</Label><Typography>Accepted changes were resolved one by one before implementation.</Typography><Typography color="text.secondary" sx={{ mt: 1 }}>I also removed my unsupported service-tier priority assumption: the case defines no SLA order. Tier remains context and an explicit sort option.</Typography></Box>
       </Box>
-      <Typography color="text.secondary" sx={{ mt: 4, maxWidth: 880, lineHeight: 1.6 }}>My role: I owned the decision-making and orchestration: first exploring the problem and data, then locking a product spec, then using agents to implement against that spec. I reviewed each phase before the next, and used targeted review passes with different “hats” — product, data quality, UX, and engineering — to catch drift and correct the implementation.</Typography>
-    </>,
-  },
-  {
-    question: 'What did AI get wrong?',
-    content: <>
-      <Typography sx={{ ...statementStyle, maxWidth: 900 }}>The generated UI initially displayed a unit’s last service visit as normal context even though the source data showed that the visit occurred before commissioning.</Typography>
-      <Typography component="h2" variant="overline" color="text.secondary" sx={{ mt: 4, mb: 1.5 }}>What I changed</Typography>
-      <Statements>
-        <li>surfaced it as a “Source data conflict”</li>
-        <li>did not guess which date was correct</li>
-        <li>did not let the inconsistency affect equipment prioritization</li>
-      </Statements>
-      <Typography component="h2" variant="overline" color="text.secondary" sx={{ mt: 4, mb: 1 }}>Why it mattered</Typography>
-      <Typography sx={statementStyle}>Data-quality issues should be visible, but kept separate from equipment health.</Typography>
-    </>,
-  },
-  {
-    question: 'How much time did I spend?',
-    content: <>
-      <Typography sx={{ ...statementStyle, fontWeight: 600 }}>~4h30 focused working time</Typography>
-      <Typography color="text.secondary" sx={{ mt: 0.5, mb: 3 }}>Spread across two evenings</Typography>
-      <Box component="dl" sx={{ m: 0, maxWidth: 700, '& > div': { display: 'flex', justifyContent: 'space-between', gap: 2, py: 1, borderBottom: '1px solid', borderColor: 'divider' }, '& dt': { fontSize: '1rem' }, '& dd': { m: 0, fontSize: '1rem', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' } }}>
-        <div><dt>Brief + framing</dt><dd>20 min</dd></div>
-        <div><dt>Data exploration &amp; cleaning</dt><dd>60 min</dd></div>
-        <div><dt>Attention logic</dt><dd>35 min</dd></div>
-        <div><dt>Product definition &amp; MVP scope</dt><dd>45 min</dd></div>
-        <div><dt>Prototype implementation</dt><dd>70 min</dd></div>
-        <div><dt>QA, iteration &amp; screenshots</dt><dd>40 min</dd></div>
+      <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid', borderColor: 'divider', maxWidth: '85ch' }}>
+        <Subheading>One concrete AI mistake I corrected</Subheading>
+        <Typography sx={{ mb: 2 }}>The generated UI initially displayed a unit’s last service visit as normal context even though the source data showed that the visit occurred before commissioning.</Typography>
+        <Statements><li>Surfaced it as a “Source data conflict”.</li><li>Did not guess which date was correct.</li><li>Kept the conflicting field out of prioritization.</li></Statements>
+        <Typography sx={{ mt: 2 }}>The useful signal is not that AI made no mistakes. It is that the workflow made mistakes detectable, reviewable and correctable before they became product logic.</Typography>
       </Box>
-      <Typography color="text.secondary" sx={{ mt: 4, lineHeight: 1.6 }}>I slightly exceeded the suggested four-hour timebox. The additional time went into validating data consistency and making the prototype demo-ready rather than expanding scope.</Typography>
+      <Box sx={{ mt: 4, maxWidth: '85ch' }}><Subheading>Actual time</Subheading>
+        <Typography sx={{ fontWeight: 600 }}>Actual focused time: ~4h30. This exceeded the stated 4-hour cap by approximately 30 minutes.</Typography>
+        <Typography color="text.secondary" sx={{ mt: 1 }}>The overrun came from additional data validation and demo QA. Under a strict 4-hour stop, I would cut presentation polish and secondary validation detail before cutting the checks that establish whether the cockpit is showing the correct units.</Typography>
+      </Box>
     </>,
   },
 ]
@@ -259,7 +255,7 @@ export function CaseStudySlide({ index, onOpenCockpit }: { index: number; onOpen
     <Typography component="h1" id="case-slide-title" ref={heading} tabIndex={-1} variant="h1"
       sx={{ fontSize: { xs: '1.875rem', md: '2.375rem' }, lineHeight: 1.2, mb: { xs: 4, md: 5 }, maxWidth: 940, '&:focus': { outline: 'none' } }}>{slide.question}</Typography>
     {slide.content}
-    {index === 3 && <Button component="a" href={import.meta.env.BASE_URL} variant="outlined" sx={{ mt: 4 }} onClick={event => {
+    {index === 5 && <Button component="a" href={import.meta.env.BASE_URL} variant="outlined" sx={{ mt: 4 }} onClick={event => {
       if (!onOpenCockpit || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
       event.preventDefault(); onOpenCockpit()
     }}>Open Service Cockpit ↗</Button>}

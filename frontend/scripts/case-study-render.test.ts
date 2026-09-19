@@ -23,42 +23,41 @@ before(async () => {
 })
 after(async () => { await server?.close() })
 
-test('ten case-study slides retain the supplied questions, facts, and uncertainty wording', () => {
+test('nine assignment-first sections retain evidence, limitations, hypotheses and working product links', () => {
   const expected = [
-    ['What problem am I solving?', 'Service triage is fragmented across incomplete tools.', 'Planners lack a trusted fleet-wide view of which units need attention.', 'Technicians can arrive on site without enough context.', 'Problem statement', 'Primary use case', 'Service teams need a faster, more reliable way to turn heterogeneous heat-pump data into actionable service decisions before dispatch.'],
-    ['Why start with the service planner?', 'Assumption', 'Improving planner triage creates greater near-term operational leverage than optimizing one technician case at a time.', 'A technician-first solution improves one case at a time; planner-first can shape many downstream technician hours.', 'The key trade-off is that this choice prioritizes operational leverage over diagnostic depth in v1.'],
-    ['What did the data tell me?', '400', '268', 'resolved units after identity cleanup and deduplication.', 'Cross-OEM energy values are not directly comparable from the supplied data.', 'Hypothesis to validate', 'Some recurring raw signals are useful for prioritization even before their technical meaning is fully documented.', 'View EDA notebook on GitHub ↗'],
-    ['What deserves attention first?', 'Technician review', 'Data / connectivity review', '4 units', '3 units', 'ALM_HP_LOWFLOW', '14 reporting days', '10 days', 'Technical meaning not validated', 'Investigate data/integration before dispatch', 'Prioritize with explainable evidence, not a universal health or severity score.', 'Hypothesis to validate', 'Persistence + rarity can be a useful prioritization signal even before OEM code semantics are fully documented.', 'Open Service Cockpit ↗'],
-    ['What did I deliberately leave out?', 'Remote control / settings changes', 'Dismiss / snooze / resolve', 'Cross-OEM efficiency scoring', 'If a capability is not required to validate planner-led triage, it stays out of v1.', 'Beyond the MVP', 'Needs attention → Reviewed → Technician assigned → En route → Resolved.', 'The case itself includes a wrong-unit reset, which makes those safeguards a prerequisite rather than an implementation detail.'],
-    ['How would I validate it?', 'Historical backtest — 3 months', 'Assumption', '~300–500 historical service cases can be linked to telemetry and technician outcomes.', '≥65%', '≤20%', '≥1 day', 'Shadow mode — 2 weeks', '3 planners review the cockpit alongside the current process.', '≥75%', '≥85%', '≤10%', '&lt;5%', 'high-concern misses among planner-identified cases', 'Recommendations would be visible, but existing dispatch decisions would remain unchanged.'],
-    ['What would success look like in a live pilot?', '4-week pilot', '3–5 planners + 8–12 technicians', 'Compare against a comparable baseline period', 'Success targets', '20–30%', '≥25%', '10–15%', '15–20%', '≥10%', 'Guardrails', '&lt;20%', '&lt;10%', 'unsupported diagnosis shown to planners or technicians', 'briefings generated without triggering evidence', 'The main guardrail is false confidence.'],
-    ['How did I use AI?', 'Wattson McStudyson — Custom GPT', 'GPT-5.6 Sol', 'View Custom GPT setup ↗', 'Codex CLI', 'GPT-6 Astra — High reasoning', 'case framing and assumption challenge', 'iterative implementation with review gates between phases', 'My role: I owned the decision-making and orchestration: first exploring the problem and data, then locking a product spec, then using agents to implement against that spec.'],
-    ['What did AI get wrong?', 'the visit occurred before commissioning.', 'What I changed', 'Source data conflict', 'did not guess which date was correct', 'did not let the inconsistency affect equipment prioritization', 'Why it mattered', 'Data-quality issues should be visible, but kept separate from equipment health.'],
-    ['How much time did I spend?', '~4h30 focused working time', 'Spread across two evenings', '20 min', '60 min', '35 min', '45 min', '70 min', '40 min', 'I slightly exceeded the suggested four-hour timebox. The additional time went into validating data consistency and making the prototype demo-ready rather than expanding scope.'],
+    ['A service planner cockpit for deciding what deserves attention this morning', 'Service planner / dispatcher', 'Requirements / build order', 'Non-goals', 'Assumption', 'Starting with the planner creates more leverage'],
+    ['How many heat pumps are actually in the dataset?', 'Observed', '415', '412', '400', '12 duplicate source rows', '273', '268', '132', 'TH-90000', 'TH-90004', 'do not force-match', 'View EDA notebook on GitHub ↗'],
+    ['What can this dataset actually tell us?', 'Efficiency', 'Is it delivering hot water?', 'Is it heating at all?', 'Is a fault recurring or one-off?', 'Partly answers', 'Evidence / limitation', 'Product implication', 'not a formal OEM capability contract'],
+    ['Tomorrow morning: what deserves review?', '4 units merit technical review', 'TH-02298', 'TH-02312', 'TH-02395', 'TH-02398', 'ALM_HP_LOWFLOW', '14', '17 Jul 2026', '30 Jul 2026', 'Medium confidence', 'Low confidence in the technical diagnosis', 'Dispatch remains a planner decision.', '3 units should go to data/connectivity investigation first', 'TH-02023', 'TH-02280', 'TH-02304', '20 Jul 2026', '10', 'High confidence that telemetry stopped; low confidence'],
+    ['The most frequent signal is not necessarily the most useful one', '6021', '2,475', '98', 'E-211', '143', '46', '3104', '116', '47', '7702', '61', '50', 'E-317', '56', 'ALM_HP_LOWFLOW', 'Candidate for technical review', 'Hypothesis to validate', 'Prototype heuristic used for this dataset', 'not industry rules, OEM specifications, SLAs or validated service policy'],
+    ['What did I build?', 'Detect → Inspect → Decide → Hand over', 'Needs Attention', 'Evidence drawer', 'Technical Visit Briefing', 'All Units', 'Open Service Cockpit ↗', 'Beyond MVP:'],
+    ['How would I validate next?', 'Signal quality', 'Routing quality', 'Planner efficiency', 'Hypothesis to validate', 'Historical backtest → planner shadow mode → small live pilot', 'Set quantitative targets after establishing the baseline.', 'Uncertain telemetry must never become unsupported diagnosis.'],
+    ['The one missing dependency I would pursue first', 'Authoritative OEM C service-code semantics', 'Open question', 'Assumption', 'Role to identify; the brief does not confirm an internal team name.', 'Medium / externally dependent.', 'First-week working message', 'I’m not asking for write access yet.'],
+    ['How I built and reviewed this with AI', 'Human framing', 'AI-assisted exploration', 'Human verification', 'AI-assisted implementation', 'Independent AI review', 'Human arbitration', 'GPT-5.6 Sol', 'GPT-6 Astra — High reasoning', 'View Custom GPT setup ↗', 'critique rather than instruction', 'unsupported service-tier priority assumption', 'One concrete AI mistake I corrected', 'Source data conflict', 'Actual focused time: ~4h30.', 'exceeded the stated 4-hour cap by approximately 30 minutes.'],
   ]
   expected.forEach((phrases, index) => {
     const html = renderToStaticMarkup(createElement(CaseStudySlide, { index }))
     assert.equal((html.match(/<h1\b/g) ?? []).length, 1)
-    for (const phrase of phrases) assert.ok(html.includes(phrase), `Slide ${index + 1}: missing ${phrase}`)
+    for (const phrase of phrases) assert.ok(html.includes(phrase), `Section ${index + 1}: missing ${phrase}`)
     assert.ok(html.includes('aria-roledescription="slide"'))
     assert.ok(!html.includes('role="img"'), 'No decorative charts')
-    assert.ok(!html.includes('🟡'), 'Slide assumption labels must be plain text')
-    assert.ok(!html.includes('What is the MVP?'), 'The live prototype replaces the former MVP slide')
-    assert.equal(html.includes('Open Service Cockpit ↗'), index === 3)
-    if (index === 2) {
-      assert.match(html, /<a\b[^>]*href="https:\/\/github.com\/AlbertoPerezPM2\/service-cockpit-case\/blob\/main\/notebooks\/01_eda.ipynb"[^>]*target="_blank"[^>]*rel="noopener noreferrer"[^>]*>View EDA notebook on GitHub ↗<\/a>/)
+    assert.ok(!html.includes('🟡'), 'Presentation labels must be plain text')
+    assert.equal(html.includes('Open Service Cockpit ↗'), index === 5)
+    if (index === 1) assert.match(html, /<a\b[^>]*href="https:\/\/github.com\/AlbertoPerezPM2\/service-cockpit-case\/blob\/main\/notebooks\/01_eda.ipynb"[^>]*target="_blank"[^>]*rel="noopener noreferrer"[^>]*>View EDA notebook on GitHub ↗<\/a>/)
+    if (index === 5) assert.match(html, /<a\b[^>]*href="\/service-cockpit-case\/"[^>]*>Open Service Cockpit ↗<\/a>/)
+    if (index === 6) {
+      assert.equal((html.match(/>Hypothesis to validate<\/span>/g) ?? []).length, 3)
+      assert.doesNotMatch(html, /\d\s*%|4-week|3–5 planners|acceptance criteria|Success targets/)
     }
-    if (index === 3) assert.match(html, /<a\b[^>]*href="\/service-cockpit-case\/"[^>]*>Open Service Cockpit ↗<\/a>/)
-    if (index === 5) assert.equal((html.match(/>Assumption<\/span>/g) ?? []).length, 2)
-    if (index === 6) assert.equal((html.match(/<strong>0<\/strong>/g) ?? []).length, 2)
+    if ([1, 2, 4].includes(index)) assert.ok(html.includes('role="region"'), 'Tables scroll within an accessible region on tablet')
   })
 })
 
 test('case-study entry shows one slide, bounded initial controls, and a cockpit return link', () => {
   const html = renderToStaticMarkup(createElement(CaseStudyPage, { onBack() {} }))
-  assert.ok(html.includes('What problem am I solving?'))
-  assert.ok(!html.includes('Why start with the service planner?'))
-  assert.ok(html.includes('1 / 10'))
+  assert.ok(html.includes('A service planner cockpit for deciding what deserves attention this morning'))
+  assert.ok(!html.includes('How many heat pumps are actually in the dataset?'))
+  assert.ok(html.includes('1 / 9'))
   assert.ok(html.includes('Slide navigation'))
   assert.match(html, /<button\b[^>]*disabled=""[^>]*>[\s\S]*?Previous<\/button>/)
   const next = html.match(/<button\b[^>]*>[\s\S]*?<\/button>/g)?.find(button => button.includes('Next'))
@@ -75,12 +74,12 @@ test('direct case-study URLs render independently of telemetry loading and root 
       assert.ok(html.includes('Needs Attention'))
       assert.ok(html.includes('href="/service-cockpit-case/case-study"'))
       if (pathname === '/service-cockpit-case/') {
-        assert.ok(!html.includes('What problem am I solving?'))
+        assert.ok(!html.includes('A service planner cockpit for deciding what deserves attention this morning'))
         assert.ok(!html.includes('class="cockpit-workspace" hidden=""'))
       } else {
-        assert.ok(html.includes('What problem am I solving?'))
+        assert.ok(html.includes('A service planner cockpit for deciding what deserves attention this morning'))
         assert.ok(html.includes('class="cockpit-workspace" hidden=""'))
-        assert.ok(html.includes('1 / 10'))
+        assert.ok(html.includes('1 / 9'))
       }
     }
   } finally {
